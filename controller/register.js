@@ -7,17 +7,17 @@ const userRegister = {
     try {
       const { name, email, password } = req.body;
 
-      if (!name) {
+      if (!name || name.trim() === '') {
         res.status(400).send('Please enter name');
         return;
       }
 
-      if (!email) {
+      if (!email || email.trim() === '') {
          res.status(400).send('Please enter email');
          return;
       }
 
-      if (!password) {
+      if (!password || password.trim() === '') {
          res.status(400).send('Please enter password');
          return;
       }
