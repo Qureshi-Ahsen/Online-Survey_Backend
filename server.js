@@ -3,8 +3,13 @@ const app = express();
 const port = 5000;
 const dotenv=require('dotenv').config();
 const routes=require('./router');
+const bodyParser=require('body-parser')
+ app.use(bodyParser.json());
+ app.use(bodyParser.json({ type: 'application/*+json' }));
+ app.use(bodyParser.urlencoded({ extended: false }));
 const connectDB = require('./config/database');
 app.use('/api',routes)
+
 
 connectDB();
 app.use('*',(req,res)=>{
