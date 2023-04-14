@@ -20,8 +20,7 @@ const surveys=new mongoose.Schema({
          },
          options:[{
             type:String
-         }],
-
+         }]
     }]
 })
 module.exports= mongoose.model('survey',surveys)
