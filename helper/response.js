@@ -27,4 +27,19 @@ function successWithData(res, token,user, message) {
     };
     res.status(200).send(x);
 };
-module.exports={hashedpassword,successResponseWithData,successWithData}
+function errorResponse(res,message) {
+    let x={
+        message,
+        status:0
+    }
+    res.status(500).send(x)
+};
+function successResponseWithoutData(res,message){
+    let x={
+        message,
+        status:1
+    }
+    res.status(200).send(x)
+    
+}
+module.exports={hashedpassword,successResponseWithData,successWithData,errorResponse,successResponseWithoutData}
