@@ -24,7 +24,7 @@ const login=async (req,res)=>{
           }
       
         const token=await jwt.sign({_id:User._id, name:User.name, email:User.email},process.env.SECRET_KEY,{expiresIn:'2h'})
-        apiresponse.successWithData(res, token, User, 'logged in successfully');
+        apiresponse.successResponseWithData(res, token, 'logged in successfully');
        }
        else{
         res.status(400).send('invalid email');

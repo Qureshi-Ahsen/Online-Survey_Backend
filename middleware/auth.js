@@ -5,13 +5,12 @@ const authMiddleware = async (req, res, next) => {
   try {
     const token = req.headers.authorization.split(' ')[1];
     const decodedToken = jwt.verify(token, process.env.SECRET_KEY);
-    const user = await User.findOne({ _id: decodedToken._id });
-
-    if (!user) {
+    
+    if (!decodedToken) {
       throw new Error('Invalid user');
     }
 
-    req.user = user;
+    req.user = {_id:decodedToken._id,name:decodedToken.name,email:decodedToken.email};
     next();
   } catch (err) {
     res.status(401).json({ message: 'Authentication failed' });

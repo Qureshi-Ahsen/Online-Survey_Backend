@@ -4,9 +4,9 @@ const apiresponse = require('../helper/response');
 
 const response = async (req, res) => {
   try {
-    const { surveyId, answers } = req.body;
+    const { surveyId, answers,name,email } = req.body;
 
-    const surveyResponse = new Response({ surveyId, answers });
+    const surveyResponse = new Response({ surveyId, answers,name,email });
     const savedResponse = await surveyResponse.save();
 
     const survey = await Survey.findById(surveyId);
@@ -29,9 +29,10 @@ const response = async (req, res) => {
 
     apiresponse.successResponseWithData(res, updatedResponse, "Response posted successfully.");
   } catch (error) {
-
-    apiresponse.errorResponse(res, "Internal server error.");
+  console.log(error)
+    return apiresponse.errorResponse(res, "Internal server error.");
   }
 };
+
 
 module.exports = response;
