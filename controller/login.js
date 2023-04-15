@@ -22,8 +22,8 @@ const login=async (req,res)=>{
             res.status(400).send('invalid password')
             return;
           }
-        const payload={_id:User._id,email:User.email}
-        const token=await jwt.sign(payload,process.env.SECRET_KEY,{expiresIn:'2h'})
+      
+        const token=await jwt.sign({_id:User._id, name:User.name, email:User.email},process.env.SECRET_KEY,{expiresIn:'2h'})
         apiresponse.successWithData(res, token, User, 'logged in successfully');
        }
        else{

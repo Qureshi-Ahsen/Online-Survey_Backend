@@ -9,8 +9,10 @@ const surveys=new mongoose.Schema({
         required:true
     },
     questions:[{
+        _id:false,
         text:{
             type:String,
+            
             required:true
          },
          qType:{
@@ -19,8 +21,19 @@ const surveys=new mongoose.Schema({
 
          },
          options:[{
+
             type:String
          }]
-    }]
-})
+    }],
+    createdBy:{
+        type:mongoose.Schema.Types.ObjectId,
+        ref:'user',
+        required:true
+    },
+    status:{
+        type:String,
+        enum:['active','inactive'],
+        default:'active'
+    }
+},{timestamps:true});
 module.exports= mongoose.model('survey',surveys)
