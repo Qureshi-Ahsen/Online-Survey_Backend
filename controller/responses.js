@@ -5,7 +5,19 @@ const apiresponse = require('../helper/response');
 const response = async (req, res) => {
   try {
     const { surveyId, answers,name,email } = req.body;
-
+     if(!surveyId || surveyId.trim()===''){
+      apiresponse.errorResponse(res,"pleane enter surveyId")
+     };
+     const filterAnswer = answers.filter(str => typeof str === 'string' && str.trim() === '');
+       if (!answers || filterAnswer.length === answers.length) {
+        return apiresponse.errorResponse(res, "please give at least one answer");
+       }
+     if(!name || name.trim()===''){
+      apiresponse.errorResponse(res,"pleane enter name")
+     };
+     if(!email || email.trim()===''){
+      apiresponse.errorResponse(res,"pleane enter email")
+     };
     const surveyResponse = new Response({ surveyId, answers,name,email });
     const savedResponse = await surveyResponse.save();
 
@@ -15,7 +27,9 @@ const response = async (req, res) => {
       if (answer && answer.answer) { 
         const question = survey.questions[index];
         const questionText = question ? question.text : 'Question not found';
-        return { ...answer.toObject(), question: questionText };
+        const questionType = question ? question.qType: "question type not found";
+        const questionOptions = question && question.options ? question.options : undefined;
+        return { ...answer.toObject(), question: questionText, questionType: questionType, qOptions: questionOptions };
       }
       return answer;
     });

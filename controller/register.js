@@ -1,5 +1,6 @@
 const User = require('../models/user');
 const apiresponse = require('../helper/response');
+const bcrypt=require('bcrypt')
 
 const userRegister = {
   async register(req, res) {
@@ -25,11 +26,11 @@ const userRegister = {
       const user = await User.findOne({ email }, { _id: 1 });
 
       if (user) {
-        res.status(500).send({ error: 'User already exists' });
+        res.status(400).send({ error: 'User already exists' });
         return;
       }
 
-      const hashedPassword = await apiresponse.hashedpassword(password);
+      const hashedPassword = await bcrypt.hash(password,10);
 
       const newUser = await User.create({
         name,

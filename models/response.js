@@ -16,7 +16,13 @@ const surveyResponse= new mongoose.Schema({
        answer:{
         type:String,
         required:true
-       }
+       },
+       questionType:{
+        type:String,
+       },
+       qOptions:[{
+        type:String
+       }]
     }],
     name:{
          type:String,
