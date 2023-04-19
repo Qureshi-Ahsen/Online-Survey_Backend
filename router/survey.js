@@ -9,5 +9,6 @@ router.get('/all',auth,surveyIn.getSurveysById)
 router.get('/info/:id', auth,surveyIn.getSurveyById)
 router.get('/responses/info/:id',auth,surveyIn.getSurveyResponses)
 router.get('/response/info/:id',auth,surveyIn.getSurveyResponse)
-// router.put('/update/:id',auth,surveyIn.updateSurvey)
+// router.put('/update/:id',auth,surveyIn.updateSurvey);
+router.get('/data/:id',auth,surveyIn.getSurveyByIdQuestions)
 module.exports=router;

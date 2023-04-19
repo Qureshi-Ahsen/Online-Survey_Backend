@@ -1,6 +1,7 @@
 const User = require('../models/user');
 const apiresponse = require('../helper/response');
-const bcrypt=require('bcrypt')
+const bcrypt=require('bcrypt');
+const validator=require('validator')
 
 const userRegister = {
   async register(req, res) {
@@ -17,27 +18,24 @@ const userRegister = {
          res.status(400).send('Please enter email');
          return;
       }
-
+      if(!validator.isEmail(email)){
+        return apiresponse.errorResponse(res,"email is invalid")
+      };
       if (!password || password.trim() === '') {
          res.status(400).send('Please enter password');
          return;
       }
-
       const user = await User.findOne({ email }, { _id: 1 });
-
       if (user) {
         res.status(400).send({ error: 'User already exists' });
         return;
       }
-
       const hashedPassword = await bcrypt.hash(password,10);
-
       const newUser = await User.create({
         name,
         email,
         password: hashedPassword
-      });
-
+       });
        apiresponse.successResponseWithData(res, newUser, 'Successfully registered');
        return;
     } catch (err) {

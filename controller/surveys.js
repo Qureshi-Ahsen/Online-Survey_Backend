@@ -27,6 +27,7 @@ const survey=async(req,res)=>{
   }
 };
 
+
 const getSurveysById=async (req,res)=>{
   try {
      
@@ -57,6 +58,22 @@ const getSurveyById=async(req,res)=>{
       return apiresponse.errorResponse(res,'internal server error');
 
      }
+};
+
+const getSurveyByIdQuestions=async(req,res)=>{
+   try {
+     const id=req.params.id
+         if(!id){
+          apiresponse.errorResponse(res,'Please enter Survey id in request parameters');
+          return;
+          }
+     const survey=await surveyModel.findById({_id:id},{questions:1});
+     return apiresponse.successResponseWithData(res,survey,"operation successful");
+   } catch (error) {
+    
+    return apiresponse.errorResponse(res,'internal server error');
+
+   }
 };
 
 const getSurveyResponses=async(req,res)=>{
@@ -118,4 +135,4 @@ const deleteSurvey=async(req,res)=>{
   }
 };
 
-module.exports={survey,getSurveysById,getSurveyById,getSurveyResponses,getSurveyResponse,updateSurvey,deleteSurvey};
+module.exports={survey,getSurveysById,getSurveyById,getSurveyResponses,getSurveyResponse,updateSurvey,deleteSurvey,getSurveyByIdQuestions};
