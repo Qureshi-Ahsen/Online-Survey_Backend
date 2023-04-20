@@ -7,13 +7,21 @@ function successResponseWithData(res,data, message){
     res.status(200).send(x);
 };
 
-function errorResponse(res,message) {
+function errorResponseServer(res,message) {
     let x={
         message,
         status:0
     }
     res.status(500).send(x)
 };
+function errorResponseBadRequest(res,message) {
+    let x={
+        message,
+        status:0
+    }
+    res.status(400).send(x)
+};
+
 function successResponseWithoutData(res,message){
     let x={
         message,
@@ -22,4 +30,4 @@ function successResponseWithoutData(res,message){
     res.status(200).send(x)
     
 }
-module.exports={successResponseWithData,errorResponse,successResponseWithoutData}
+module.exports={successResponseWithData,errorResponseServer,successResponseWithoutData,errorResponseBadRequest}

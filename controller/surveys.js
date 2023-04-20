@@ -7,14 +7,14 @@ const survey=async(req,res)=>{
      const {_id}=req.user;
      const{title,description,questions}=req.body;
      if(!title || title.trim()  ===''){
-        return apiresponse.errorResponse(res,"please enter an title");
+        return apiresponse.errorResponseBadRequest(res,"please enter an title");
      }
      if(!description || description.trim() ===''){
-      return apiresponse.errorResponse(res,"please enter an description");
+      return apiresponse.errorResponseBadRequest(res,"please enter an description");
      }
      const filterQuestion = questions.filter(str => typeof str === 'string' && str.trim() === '');
        if (!questions || filterQuestion.length === questions.length) {
-        return apiresponse.errorResponse(res, "please enter at least one question");
+        return apiresponse.errorResponseBadRequest(res, "please enter at least one question");
        }
      const doc = new surveyModel({title,description,questions,createdBy:_id})
      await doc.save();
@@ -23,7 +23,7 @@ const survey=async(req,res)=>{
     }
  catch (error) {
    console.log(error)
-   return apiresponse.errorResponse(res,'internal server error');   
+   return apiresponse.errorResponseServer(res,'internal server error');   
   }
 };
 

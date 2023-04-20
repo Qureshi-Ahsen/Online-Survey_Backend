@@ -42,14 +42,14 @@ const resetPassword = async (req, res) => {
     const { newPassword, confirmPassword, oldPassword } = req.body;
     const admin = await user.findById(_id);
     if (!admin) {
-      return apiresponse.errorResponse(res, "user does not exist");
+      return apiresponse.errorResponseBadRequest(res, "user does not exist");
     }
     const matchPassword = await bcrypt.compare(oldPassword, admin.password);
     if (!matchPassword) {
-      return apiresponse.errorResponse(res, "Old password is incorrect");
+      return apiresponse.errorResponseBadRequest(res, "Old password is incorrect");
     }
     if (newPassword !== confirmPassword) {
-      return apiresponse.errorResponse(res, "New passwords do not match");
+      return apiresponse.errorResponseBadRequest(res, "New passwords do not match");
     } else {
       const changedPassword = await bcrypt.hash(newPassword, 10);
       const updatedPassword = admin.password = changedPassword;
@@ -66,23 +66,25 @@ const forgotPassword=async(req,res)=>{
   try {
     const {email}=req.body;
     if(!email || email.trim()===''){
-      apiresponse.errorResponse(res,"enter email")
+      apiresponse.errorResponseBadRequest(res,"enter email")
     };
-    const userData=await user.findOne(email);
+    const userData=await user.findOne({email:email});
     if(!userData){
-      apiresponse.errorResponse(res,"User with email not found");
+      apiresponse.errorResponseBadRequest(res,"User with email not found");
       return;
     };
-    const resetToken= await jwt.sign(userData.password,process.env.SECRET_KEY ,{expiresIn:'10m'});
+    const resetToken= await jwt.sign({password:userData.password},process.env.SECRET_KEY ,{expiresIn:'10m'});
+    console.log(resetToken)
     const transporter = nodemailer.createTransport({
-      service: 'gmail',
+      host: "sandbox.smtp.mailtrap.io",
+      port: 2525,
       auth: {
-        user: '',
-        pass: '',
-      },
+        user: "28952fea80fd81",
+        pass: "54ec0531e87ebe"
+      }
     });
     const mailOptions = {
-      from: '<your-gmail-username>',
+      from: '28952fea80fd81',
       to: email,
       subject: 'Password Reset Request',
       text: `Your password reset token is: ${resetToken}`,
@@ -94,12 +96,13 @@ const forgotPassword=async(req,res)=>{
         res.status(500).json({ error: 'Failed to send email' });
       } else {
         console.log('Email sent: ' + info.response);
-        res.json({ message: 'Password reset email sent' });
+        apiresponse.successResponseWithoutData(res,"password reset email has been sent");
       }
     });
   
   } catch (error) {
-    apiresponse.errorResponse(res,"internal server error")
+    console.log(error)
+    apiresponse.errorResponseServer(res,"internal server error")
   }
 };
 
@@ -125,7 +128,7 @@ const changePassword=async(req,res)=>{
   });
 
   } catch (error) {
-    apiresponse.errorResponse(res,"internal server error")
+    apiresponse.errorResponseServer(res,"internal server error")
   }
 }
-module.exports={login,resetPassword}
+module.exports={login,resetPassword,forgotPassword,changePassword}

@@ -44,7 +44,7 @@ const response = async (req, res) => {
     apiresponse.successResponseWithData(res, updatedResponse, "Response posted successfully.");
   } catch (error) {
   console.log(error)
-    return apiresponse.errorResponse(res, "Internal server error.");
+    return apiresponse.errorResponseServer(res, "Internal server error.");
   }
 };
 

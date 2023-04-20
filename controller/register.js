@@ -19,7 +19,7 @@ const userRegister = {
          return;
       }
       if(!validator.isEmail(email)){
-        return apiresponse.errorResponse(res,"email is invalid")
+        return apiresponse.errorResponseBadRequest(res,"email is invalid")
       };
       if (!password || password.trim() === '') {
          res.status(400).send('Please enter password');
