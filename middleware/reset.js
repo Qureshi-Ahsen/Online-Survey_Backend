@@ -15,7 +15,7 @@ const resetMiddleware = (req, res, next) => {
         return res.status(400).json({ error: 'Invalid or expired reset token' });
       }
   
-      req.email = decoded.email;
+      req._id = decoded._id;
     
       next();
     });

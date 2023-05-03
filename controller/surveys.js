@@ -6,6 +6,7 @@ const survey=async(req,res)=>{
  try {
      const {_id}=req.user;
      const{title,description,questions}=req.body;
+     console.log(req.body)
      if(!title || title.trim()  ===''){
         return apiresponse.errorResponseBadRequest(res,"please enter an title");
      }
@@ -32,6 +33,7 @@ const getSurveysById=async (req,res)=>{
   try {
      
    const {_id}=req.user;
+   console.log(_id)
           if(!_id){
              apiresponse.errorResponse(res,'please enter token');
            
@@ -110,10 +112,10 @@ const updateSurvey=async(req,res)=>{
    try {
       const _id=req.params.id;
       if(!_id){
-         apiresponse.errorResponse(res,'Please enter response id in request parameters');
+         apiresponse.errorResponse(res,'Please send survey id in request parameters');
          return;
       };
-      const updateSurveys= await responseModel.findByIdAndUpdate(_id,req.body,{new:true});
+      const updateSurveys= await surveyModel.findByIdAndUpdate(_id,req.body,{new:true});
       const newSurvey=await updateSurveys;
       return apiresponse.successResponseWithData(res,newSurvey,'operation successful')
 

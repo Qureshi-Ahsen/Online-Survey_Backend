@@ -6,17 +6,17 @@ const response = async (req, res) => {
   try {
     const { surveyId, answers,name,email } = req.body;
      if(!surveyId || surveyId.trim()===''){
-      apiresponse.errorResponse(res,"pleane enter surveyId")
+      apiresponse.errorResponse(res,"please enter surveyId")
      };
      const filterAnswer = answers.filter(str => typeof str === 'string' && str.trim() === '');
        if (!answers || filterAnswer.length === answers.length) {
         return apiresponse.errorResponse(res, "please give at least one answer");
        }
      if(!name || name.trim()===''){
-      apiresponse.errorResponse(res,"pleane enter name")
+      apiresponse.errorResponse(res,"please enter name")
      };
      if(!email || email.trim()===''){
-      apiresponse.errorResponse(res,"pleane enter email")
+      apiresponse.errorResponse(res,"please enter email")
      };
     const surveyResponse = new Response({ surveyId, answers,name,email });
     const savedResponse = await surveyResponse.save();

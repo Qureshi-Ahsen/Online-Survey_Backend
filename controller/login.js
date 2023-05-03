@@ -3,6 +3,7 @@ const bcrypt=require('bcrypt');
 const jwt=require('jsonwebtoken');
 const apiresponse=require('../helper/response');
 const nodemailer=require('nodemailer')
+const otpGenerator=require('otp-generator')
 
 
 const login=async (req,res)=>{
@@ -16,7 +17,7 @@ const login=async (req,res)=>{
         res.status(400).send('please enter password');
         return;
        };
-       const User=await user.findOne({email});
+       const User=await user.findOne({email:email});
        if(User){
                const matchpassword=await bcrypt.compare(password,User.password)
                  if(!matchpassword){
@@ -64,17 +65,21 @@ const resetPassword = async (req, res) => {
 
 const forgotPassword=async(req,res)=>{
   try {
-    const {email}=req.body;
-    if(!email || email.trim()===''){
-      apiresponse.errorResponseBadRequest(res,"enter email")
-    };
-    const userData=await user.findOne({email:email});
-    if(!userData){
-      apiresponse.errorResponseBadRequest(res,"User with email not found");
+    const { email } = req.body;
+    if (!email || email.trim() === '') {
+      apiresponse.errorResponseBadRequest(res, 'Please enter your email address');
       return;
-    };
-    const resetToken= await jwt.sign({password:userData.password},process.env.SECRET_KEY ,{expiresIn:'10m'});
-    console.log(resetToken)
+    }
+    const userData = await user.findOne({ email},{password:0});
+    if (!userData) {
+      apiresponse.errorResponseBadRequest(res, 'User with email not found');
+      return;
+    }
+    console.log(userData)
+      const otp= await otpGenerator.generate(6,{lowerCaseAlphabets:true,digits:true,specialChars:true})
+      req.session.userData = { _id: userData._id };
+      req.session.otp = { code: otp };
+    console.log( req.session.userData._id)
     const transporter = nodemailer.createTransport({
       host: "sandbox.smtp.mailtrap.io",
       port: 2525,
@@ -87,7 +92,7 @@ const forgotPassword=async(req,res)=>{
       from: '28952fea80fd81',
       to: email,
       subject: 'Password Reset Request',
-      text: `Your password reset token is: ${resetToken}`,
+      text: `Your password reset otp is: ${ otp} please enter this otp`,
     };
   
     transporter.sendMail(mailOptions, (error, info) => {
@@ -109,24 +114,21 @@ const forgotPassword=async(req,res)=>{
 
 const changePassword=async(req,res)=>{
   try {
-    const { resetToken, newPassword } = req.body;
-
- 
-  jwt.verify(resetToken, process.env.SECRET_KEY, (err, decoded) => {
-    if (err) {
-      console.log(err);
-      res.status(400).json({ error: 'Invalid or expired reset token' });
-    } else {
-      const { email } = decoded;
-
- 
-      const hashedPassword = bcrypt.hashSync(newPassword, 10);
-  
-
-      res.json({ message: 'Password updated successfully' });
-    }
-  });
-
+    const { otp,newPassword } = req.body;
+    if (req.session.otp !== otp){
+      apiresponse.errorResponseBadRequest(res,"invalid otp");
+      return;
+    };
+    const otpExpiration=  (Date.now()-req.session.createdAt)/1000 /60;
+    if(otpExpiration > 5){
+      apiresponse.errorResponseBadRequest(res, 'OTP code has expired');
+      return;
+     }
+    const hashedPassword = bcrypt.hash(newPassword, 10);
+     userData.password=hashedPassword;
+     await userData.save();
+     req.session.destroy();
+     res.json({ message: 'Password updated successfully' });
   } catch (error) {
     apiresponse.errorResponseServer(res,"internal server error")
   }
