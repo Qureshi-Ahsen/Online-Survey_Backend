@@ -4,6 +4,7 @@ const jwt=require('jsonwebtoken');
 const apiresponse=require('../helper/response');
 const nodemailer=require('nodemailer')
 const otpGenerator=require('otp-generator')
+const otpModel=require('../models/otp')
 
 
 const login=async (req,res)=>{
@@ -70,16 +71,16 @@ const forgotPassword=async(req,res)=>{
       apiresponse.errorResponseBadRequest(res, 'Please enter your email address');
       return;
     }
-    const userData = await user.findOne({ email},{password:0});
+    const userData = await user.findOne({ email },{password:0});
     if (!userData) {
       apiresponse.errorResponseBadRequest(res, 'User with email not found');
       return;
     }
     console.log(userData)
       const otp= await otpGenerator.generate(6,{lowerCaseAlphabets:true,digits:true,specialChars:true})
-      req.session.userData = { _id: userData._id };
-      req.session.otp = { code: otp };
-    console.log( req.session.userData._id)
+      const saveOtp=new otpModel({otp:otp,userId:userData._id})
+      console.log(otp)
+      await saveOtp.save();
     const transporter = nodemailer.createTransport({
       host: "sandbox.smtp.mailtrap.io",
       port: 2525,
@@ -112,25 +113,28 @@ const forgotPassword=async(req,res)=>{
 };
 
 
-const changePassword=async(req,res)=>{
+const changePassword = async (req, res) => {
   try {
-    const { otp,newPassword } = req.body;
-    if (req.session.otp !== otp){
-      apiresponse.errorResponseBadRequest(res,"invalid otp");
+    const { otp, newPassword } = req.body;
+    const findOtp = await otpModel.findOne({ otp: otp });
+    if (!findOtp) {
+      apiresponse.errorResponseBadRequest(res, "Invalid OTP code");
       return;
-    };
-    const otpExpiration=  (Date.now()-req.session.createdAt)/1000 /60;
-    if(otpExpiration > 5){
-      apiresponse.errorResponseBadRequest(res, 'OTP code has expired');
+    }
+    const otpExpiration = (Date.now() - findOtp.createdAt) / 1000 / 60;
+    if (otpExpiration > 5) {
+      apiresponse.errorResponseBadRequest(res, "OTP code has expired");
       return;
-     }
-    const hashedPassword = bcrypt.hash(newPassword, 10);
-     userData.password=hashedPassword;
-     await userData.save();
-     req.session.destroy();
-     res.json({ message: 'Password updated successfully' });
+    }
+    const userData = await user.findById(findOtp.userId, { password: 1 });
+    const hashedPassword = await bcrypt.hash(newPassword, 10);
+    userData.password = hashedPassword;
+    await userData.save();
+    await otpModel.deleteOne({ otp: otp });
+    res.json({ message: "Password updated successfully" });
   } catch (error) {
-    apiresponse.errorResponseServer(res,"internal server error")
+    console.log(error);
+    apiresponse.errorResponseServer(res, "Internal server error");
   }
-}
+};
 module.exports={login,resetPassword,forgotPassword,changePassword}

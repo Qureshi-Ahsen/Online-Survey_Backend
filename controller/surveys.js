@@ -13,6 +13,13 @@ const survey=async(req,res)=>{
      if(!description || description.trim() ===''){
       return apiresponse.errorResponseBadRequest(res,"please enter an description");
      }
+   //   if(!questions.text || questions.text .trim() ===''){
+   //    return apiresponse.errorResponseBadRequest(res,"please enter an question text");
+   //   }
+   //   if(!questions.qType || questions.qType.trim() ===''){
+   //    return apiresponse.errorResponseBadRequest(res,"please enter an question type");
+   //   }
+     
      const filterQuestion = questions.filter(str => typeof str === 'string' && str.trim() === '');
        if (!questions || filterQuestion.length === questions.length) {
         return apiresponse.errorResponseBadRequest(res, "please enter at least one question");
