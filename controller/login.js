@@ -25,8 +25,17 @@ const login=async (req,res)=>{
                  res.status(400).send('invalid password')
                   return;
        };
-       const token=await jwt.sign({_id:User._id, name:User.name, email:User.email},process.env.SECRET_KEY,{expiresIn:'2h'})
-           apiresponse.successResponseWithData(res, token, 'logged in successfully');
+       const accessToken=await jwt.sign({_id:User._id, name:User.name, email:User.email},process.env.ACCESSTOKEN_KEY,{expiresIn:'2h'})
+       const refreshToken= await jwt.sign({_id:User._id},process.env.REFRESHTOKEN_KEY,{expiresIn:'7d'});
+       User.refreshToken=refreshToken;
+       await User.save();
+       const tokens={accessToken,refreshToken}
+       res.cookie('refreshToken', refreshToken, {
+        httpOnly: true,
+        secure: false, 
+        sameSite: 'none', 
+     });
+           apiresponse.successResponseWithData(res, accessToken, 'logged in successfully');
         }
        else{
           res.status(400).send('invalid email');
@@ -137,4 +146,34 @@ const changePassword = async (req, res) => {
     apiresponse.errorResponseServer(res, "Internal server error");
   }
 };
-module.exports={login,resetPassword,forgotPassword,changePassword}
+
+const refrehtoken=async (req,res)=>{
+ 
+  try {
+    const {refreshToken}=req.body
+    if(!refreshToken){
+      apiresponse.errorResponseBadRequest(res,"please enter request token in body")
+      return
+    }
+    const decoded= await jwt.verify(refreshToken,process.env.REFRESHTOKEN_KEY)
+    if(!decoded){
+    return  apiresponse.errorResponseBadRequest(res,"invalid user")
+    };
+
+    const User=await user.findOne({_id:decoded._id});
+    if(User.refreshToken !== refreshToken ){
+      res.status(404).send("invalid token")
+    };
+   
+    const generateAccessToken = (User) =>{
+      return   jwt.sign({_id:User._id, name:User.name, email:User.email},process.env.ACCESSTOKEN_KEY,{expiresIn:'2h'})
+    };
+    const accessToken=generateAccessToken(User)
+    apiresponse.successResponseWithData(res,accessToken,"access token generated successfully")
+
+  } catch (error) {
+    console.log(error)
+    apiresponse.errorResponseServer(res, "Internal server error");
+  }
+}
+module.exports={login,resetPassword,forgotPassword,changePassword,refrehtoken}

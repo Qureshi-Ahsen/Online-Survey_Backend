@@ -40,7 +40,6 @@ const getSurveysById=async (req,res)=>{
   try {
      
    const {_id}=req.user;
-   console.log(_id)
           if(!_id){
              apiresponse.errorResponse(res,'please enter token');
            
@@ -57,14 +56,14 @@ const getSurveyById=async(req,res)=>{
      try {
        const id=req.params.id
            if(!id){
-            apiresponse.errorResponse(res,'Please enter Survey id in request parameters');
+            apiresponse.errorResponseBadRequest(res,'Please enter Survey id in request parameters');
             return;
             }
        const survey=await surveyModel.findById({_id:id},{title:1,description:1,questions:1,status:1});
        return apiresponse.successResponseWithData(res,survey,"operation successful");
      } catch (error) {
-      
-      return apiresponse.errorResponse(res,'internal server error');
+      console.log(error)
+      return apiresponse.errorResponseServer(res,'internal server error');
 
      }
 };
@@ -72,15 +71,15 @@ const getSurveyById=async(req,res)=>{
 const getSurveyByIdQuestions=async(req,res)=>{
    try {
      const id=req.params.id
-         if(!id){
-          apiresponse.errorResponse(res,'Please enter Survey id in request parameters');
+         if(!id || id.trim()===''){
+          apiresponse.errorResponseBadRequest(res,'Please enter Survey id in request parameters');
           return;
           }
      const survey=await surveyModel.findById({_id:id},{questions:1});
      return apiresponse.successResponseWithData(res,survey,"operation successful");
    } catch (error) {
-    
-    return apiresponse.errorResponse(res,'internal server error');
+    console.log(error)
+    return apiresponse.errorResponseServer(res,'internal server error');
 
    }
 };
@@ -89,7 +88,7 @@ const getSurveyResponses=async(req,res)=>{
    try {
       const id=req.params.id;
         if(!id){
-           apiresponse.errorResponse(res,'Please enter Survey id in request parameters');
+           apiresponse.errorResponseBadRequest(res,'Please enter Survey id in request parameters');
            return;
        }
       const surveyResponse=await responseModel.find({surveyId:id},{name:1,email:1,createdAt:1})
@@ -97,14 +96,14 @@ const getSurveyResponses=async(req,res)=>{
       return apiresponse.successResponseWithData(res,surveyResponse,"operation successful");
 
    } catch (error) {
-      return apiresponse.errorResponse(res,'internal server error');   
+      return apiresponse.errorResponseServer(res,'internal server error');   
    }
 };
 const getSurveyResponse=async(req,res)=>{
    try {
       const id=req.params.id;
         if(!id){
-           apiresponse.errorResponse(res,'Please enter response id in request parameters');
+           apiresponse.errorResponseBadRequest(res,'Please enter response id in request parameters');
            return;
        }
       const surveyResponse=await responseModel.find({_id:id},{name:1,answers:1})
@@ -112,14 +111,14 @@ const getSurveyResponse=async(req,res)=>{
       return apiresponse.successResponseWithData(res,surveyResponse,"operation successful");
 
    } catch (error) {
-      return apiresponse.errorResponse(res,'internal server error');   
+      return apiresponse.errorResponseServer(res,'internal server error');   
    }
 };
 const updateSurvey=async(req,res)=>{
    try {
       const _id=req.params.id;
       if(!_id){
-         apiresponse.errorResponse(res,'Please send survey id in request parameters');
+         apiresponse.errorResponseBadRequest(res,'Please send survey id in request parameters');
          return;
       };
       const updateSurveys= await surveyModel.findByIdAndUpdate(_id,req.body,{new:true});
@@ -127,21 +126,24 @@ const updateSurvey=async(req,res)=>{
       return apiresponse.successResponseWithData(res,newSurvey,'operation successful')
 
    } catch (error) {
-      return apiresponse.errorResponse(res,'internal server error');   
+      return apiresponse.errorResponseServer(res,'internal server error');   
    }
 };
 const deleteSurvey=async(req,res)=>{
   try {
-   const _id=req.params.id;
-   if(!_id){
-      apiresponse.errorResponse(res,'Please enter response id in request parameters');
+   const id=req.params.id;
+   if(!id){
+      apiresponse.errorResponseServer(res,'Please enter response id in request parameters');
       return;
    };
-   await responseModel.findByIdAndDelete(_id);
-   return apiresponse.successResponseWithoutData(res,"survey `${_id}` deleted successfully");
+  const deleteSurvey= await surveyModel.findByIdAndDelete({_id:id});
+   console.log(deleteSurvey)
+   return apiresponse.successResponseWithoutData(res, `survey with id: ${id} deleted successfully`);
   } catch (error) {
-   return apiresponse.errorResponse(res,'internal server error'); 
+   console.log(error)
+   return apiresponse.errorResponseServer(res,'internal server error'); 
   }
+  
 };
 
 module.exports={survey,getSurveysById,getSurveyById,getSurveyResponses,getSurveyResponse,updateSurvey,deleteSurvey,getSurveyByIdQuestions};
