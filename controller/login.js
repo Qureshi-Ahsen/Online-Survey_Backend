@@ -30,11 +30,11 @@ const login=async (req,res)=>{
        User.refreshToken=refreshToken;
        await User.save();
        const tokens={accessToken,refreshToken}
-       res.cookie('refreshToken', refreshToken, {
-        httpOnly: true,
-        secure: false, 
-        sameSite: 'none', 
-     });
+    //    res.cookie('refreshToken', refreshToken, {
+    //     httpOnly: true,
+    //     secure: false, 
+    //     sameSite: 'none', 
+    //  });
            apiresponse.successResponseWithData(res, accessToken, 'logged in successfully');
         }
        else{
@@ -51,7 +51,7 @@ const resetPassword = async (req, res) => {
   try {
     const _id = req.user;
     const { newPassword, confirmPassword, oldPassword } = req.body;
-    const admin = await user.findById(_id);
+    const admin = await user.findById(_id,{password:1});
     if (!admin) {
       return apiresponse.errorResponseBadRequest(res, "user does not exist");
     }
@@ -80,7 +80,8 @@ const forgotPassword=async(req,res)=>{
       apiresponse.errorResponseBadRequest(res, 'Please enter your email address');
       return;
     }
-    const userData = await user.findOne({ email },{password:0});
+    console.log( req.body)
+    const userData = await user.findOne({ email },{password:0,refreshToken:0});
     if (!userData) {
       apiresponse.errorResponseBadRequest(res, 'User with email not found');
       return;
@@ -88,7 +89,6 @@ const forgotPassword=async(req,res)=>{
     console.log(userData)
       const otp= await otpGenerator.generate(6,{lowerCaseAlphabets:true,digits:true,specialChars:true})
       const saveOtp=new otpModel({otp:otp,userId:userData._id})
-      console.log(otp)
       await saveOtp.save();
     const transporter = nodemailer.createTransport({
       host: "sandbox.smtp.mailtrap.io",
@@ -125,6 +125,7 @@ const forgotPassword=async(req,res)=>{
 const changePassword = async (req, res) => {
   try {
     const { otp, newPassword } = req.body;
+    console.log( req.body)
     const findOtp = await otpModel.findOne({ otp: otp });
     if (!findOtp) {
       apiresponse.errorResponseBadRequest(res, "Invalid OTP code");
@@ -160,7 +161,7 @@ const refrehtoken=async (req,res)=>{
     return  apiresponse.errorResponseBadRequest(res,"invalid user")
     };
 
-    const User=await user.findOne({_id:decoded._id});
+    const User=await user.findOne({_id:decoded._id},{refreshToken:1});
     if(User.refreshToken !== refreshToken ){
       res.status(404).send("invalid token")
     };

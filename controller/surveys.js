@@ -6,24 +6,28 @@ const survey=async(req,res)=>{
  try {
      const {_id}=req.user;
      const{title,description,questions}=req.body;
-     console.log(req.body)
      if(!title || title.trim()  ===''){
         return apiresponse.errorResponseBadRequest(res,"please enter an title");
      }
      if(!description || description.trim() ===''){
       return apiresponse.errorResponseBadRequest(res,"please enter an description");
      }
-   //   if(!questions.text || questions.text .trim() ===''){
-   //    return apiresponse.errorResponseBadRequest(res,"please enter an question text");
-   //   }
-   //   if(!questions.qType || questions.qType.trim() ===''){
-   //    return apiresponse.errorResponseBadRequest(res,"please enter an question type");
-   //   }
-     
+   
      const filterQuestion = questions.filter(str => typeof str === 'string' && str.trim() === '');
-       if (!questions || filterQuestion.length === questions.length) {
-        return apiresponse.errorResponseBadRequest(res, "please enter at least one question");
+
+     if (!questions || filterQuestion.length === questions.length) {
+       return apiresponse.errorResponseBadRequest(res, "please enter at least one question");
+     }
+     
+     for (const question of questions) {
+       if (!question.text || question.text.trim() === '') {
+         return apiresponse.errorResponseBadRequest(res, "please enter a question text");
        }
+       if (!question.qType || question.qType.trim() === '') {
+         return apiresponse.errorResponseBadRequest(res, "please enter a question type");
+       }
+     }
+     
      const doc = new surveyModel({title,description,questions,createdBy:_id})
      await doc.save();
   
@@ -91,7 +95,9 @@ const getSurveyResponses=async(req,res)=>{
            apiresponse.errorResponseBadRequest(res,'Please enter Survey id in request parameters');
            return;
        }
-      const surveyResponse=await responseModel.find({surveyId:id},{name:1,email:1,createdAt:1})
+       const responseCount = await responseModel.countDocuments({ surveyId: id });
+       const surveyResponse = await responseModel.find({ surveyId: id }, { name: 1, email: 1, createdAt: 1 });
+       
       
       return apiresponse.successResponseWithData(res,surveyResponse,"operation successful");
 
@@ -137,7 +143,6 @@ const deleteSurvey=async(req,res)=>{
       return;
    };
   const deleteSurvey= await surveyModel.findByIdAndDelete({_id:id});
-   console.log(deleteSurvey)
    return apiresponse.successResponseWithoutData(res, `survey with id: ${id} deleted successfully`);
   } catch (error) {
    console.log(error)
