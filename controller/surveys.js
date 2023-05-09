@@ -127,6 +127,7 @@ const updateSurvey=async(req,res)=>{
          apiresponse.errorResponseBadRequest(res,'Please send survey id in request parameters');
          return;
       };
+      console.log(req.body)
       const updateSurveys= await surveyModel.findByIdAndUpdate(_id,req.body,{new:true});
       const newSurvey=await updateSurveys;
       return apiresponse.successResponseWithData(res,newSurvey,'operation successful')
