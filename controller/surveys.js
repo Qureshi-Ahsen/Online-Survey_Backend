@@ -102,6 +102,7 @@ const getSurveyResponses=async(req,res)=>{
       return apiresponse.successResponseWithData(res,surveyResponse,"operation successful");
 
    } catch (error) {
+      console.log(error)
       return apiresponse.errorResponseServer(res,'internal server error');   
    }
 };
@@ -112,7 +113,7 @@ const getSurveyResponse=async(req,res)=>{
            apiresponse.errorResponseBadRequest(res,'Please enter response id in request parameters');
            return;
        }
-      const surveyResponse=await responseModel.find({_id:id},{name:1,answers:1})
+      const surveyResponse=await responseModel.find({surveyId:id},{name:1,answers:1})
       
       return apiresponse.successResponseWithData(res,surveyResponse,"operation successful");
 

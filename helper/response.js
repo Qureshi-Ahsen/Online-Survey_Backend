@@ -30,4 +30,5 @@ function successResponseWithoutData(res,message){
     res.status(200).send(x)
     
 }
+
 module.exports={successResponseWithData,errorResponseServer,successResponseWithoutData,errorResponseBadRequest}
