@@ -22,7 +22,7 @@ const login=async (req,res)=>{
        if(User){
                const matchpassword=await bcrypt.compare(password,User.password)
                  if(!matchpassword){
-                 res.status(400).send('invalid password')
+                 res.status(400).send('Invalid password')
                   return;
        };
        const accessToken=await jwt.sign({_id:User._id, name:User.name, email:User.email},process.env.ACCESSTOKEN_KEY,{expiresIn:'2h'})
@@ -30,15 +30,10 @@ const login=async (req,res)=>{
        User.refreshToken=refreshToken;
        await User.save();
        const tokens={accessToken,refreshToken}
-    //    res.cookie('refreshToken', refreshToken, {
-    //     httpOnly: true,
-    //     secure: false, 
-    //     sameSite: 'none', 
-    //  });
-           apiresponse.successResponseWithData(res, accessToken, 'logged in successfully');
+           apiresponse.successResponseWithData(res, tokens, 'logged in successfully');
         }
        else{
-          res.status(400).send('invalid email');
+          res.status(400).send('Invalid email');
          return;
         }  
     } catch (error) {

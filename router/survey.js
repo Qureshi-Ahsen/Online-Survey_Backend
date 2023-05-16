@@ -4,7 +4,7 @@ const surveyRes=require('../controller/responses')
 const surveyIn=require('../controller/surveys')
 const auth=require('../middleware/auth')
 router.post('/create',auth,surveyIn.survey)
-router.post('/response',surveyRes),
+router.post('/response/:id',surveyRes),
 router.get('/all',auth,surveyIn.getSurveysById)
 router.get('/info/:id', auth,surveyIn.getSurveyById)
 router.get('/responses/:id',auth,surveyIn.getSurveyResponses)
