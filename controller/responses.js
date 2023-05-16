@@ -4,20 +4,21 @@ const apiresponse = require('../helper/response');
 
 const response = async (req, res) => {
   try {
-    const { surveyId, answers,name,email } = req.body;
+    const {  answers,name,email } = req.body;
+    console.log(req.body)
+    const surveyId=req.params.id
      if(!surveyId || surveyId.trim()===''){
-      apiresponse.errorResponseBadRequest(res,"please enter surveyId")
-     };
-     const filterAnswer = answers.filter(str => typeof str === 'string' && str.trim() === '');
-       if (!answers || filterAnswer.length === answers.length) {
-        return apiresponse.errorResponseBadRequest(res, "please give at least one answer");
-       }
+      apiresponse.errorResponseBadRequest(res,"please enter surveyId in parameters")
+     }; 
+   
      if(!name || name.trim()===''){
       apiresponse.errorResponseBadRequest(res,"please enter name")
      };
      if(!email || email.trim()===''){
       apiresponse.errorResponseBadRequest(res,"please enter email")
      };
+       
+
     const surveyResponse = new Response({ surveyId, answers,name,email });
     const savedResponse = await surveyResponse.save();
 
