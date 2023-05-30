@@ -1,5 +1,5 @@
-const express=require('express')
-const router=express.Router()
+const express=require('express');
+const router=express.Router();
 const surveyRes=require('../controller/responses')
 const surveyIn=require('../controller/surveys')
 const auth=require('../middleware/auth')
@@ -9,6 +9,7 @@ router.get('/all',auth,surveyIn.getSurveysById)
 router.get('/info/:id', auth,surveyIn.getSurveyById)
 router.get('/responses/:id',auth,surveyIn.getSurveyResponses)
 router.get('/response/:id',auth,surveyIn.getSurveyResponse)
+router.get('/infos/:id',surveyIn.getSurveyByIdQuestions)
 router.put('/update/:id',auth,surveyIn.updateSurvey);
 router.get('/data/:id',auth,surveyIn.getSurveyByIdQuestions);
 router.delete('/delete/:id',auth,surveyIn.deleteSurvey)

@@ -1,6 +1,6 @@
-const surveyModel=require('../models/survey')
+const surveyModel=require('../models/survey');
 const apiresponse=require('../helper/response');
-const responseModel=require('../models/response')
+const responseModel=require('../models/response');
 const mongoose = require('mongoose');
 
 const survey=async(req,res)=>{
@@ -36,30 +36,42 @@ const survey=async(req,res)=>{
     }  
  catch (error) {
    console.log(error)
-   return apiresponse.errorResponseServer(res,'internal server error');   
+   return apiresponse.errorResponseServer(res,'Something Went Wrong');   
   }
 };
 
-
-const getSurveysById=async (req,res)=>{
-  try {
-   const user=req.headers.authorization 
-   const {_id}=req.user;
-          if(!_id){
-             apiresponse.errorResponse(res,'please enter token');
-           
-             return;
-         }
-      const surveys= await surveyModel.find({createdBy:_id},{questions:0,updatedAt:0});
-      if(survey.createdBy !== user._id){
-         apiresponse.errorResponseBadRequest(res,'cannot access surveys created by other users');
-         return;
-       }
-      return apiresponse.successResponseWithData(res,surveys,'Operation successful');
+const getSurveysById = async (req, res) => {
+   try {
+     const { _id } = req.user;
+ 
+     if (!_id) {
+       return apiresponse.errorResponse(res, 'Please enter token');
+     }
+ 
+     const surveys = await surveyModel.find({ createdBy: _id }, { _id: 1, title: 1, description: 1, questions: 1 }).lean();
+ 
+     for (const survey of surveys) {
+       const surveyId = survey._id;
+       const queryCriteria = { surveyId };
+       const responseCount = await responseModel.countDocuments(queryCriteria).exec();
+ 
+       survey.responseCount = responseCount;
+     }
+ 
+     const data = {
+       surveys
+     };
+ 
+     return apiresponse.successResponseWithData(res, data, 'Retrieved All Surveys with Responses Respectively');
    } catch (error) {
-     return apiresponse.errorResponse(res,'internal server error');
+     console.log(error);
+     return apiresponse.errorResponseServer(res, 'Something went wrong');
    }
-};
+ };
+ 
+ 
+ 
+ 
 
 const getSurveyById=async(req,res)=>{
      try {
@@ -74,31 +86,27 @@ const getSurveyById=async(req,res)=>{
          apiresponse.errorResponseBadRequest(res,'cannot access surveys created by other users');
          return;
        }
-       return apiresponse.successResponseWithData(res,survey,"operation successful");
+       return apiresponse.successResponseWithData(res,survey,"Operation Successful");
      } catch (error) {
       console.log(error)
-      return apiresponse.errorResponseServer(res,'internal server error');
+      return apiresponse.errorResponseServer(res,'Something Went Wrong');
 
-     }
+     }  
 };
 
 const getSurveyByIdQuestions=async(req,res)=>{
    try {
-     const user=req.headers.authorization
      const id=req.params.id
          if(!id || id.trim()===''){
           apiresponse.errorResponseBadRequest(res,'Please enter Survey id in request parameters');
           return;
           }
-     const survey=await surveyModel.findById({_id:id},{questions:1});
-         if(survey.createdBy !== user._id){
-            apiresponse.errorResponseBadRequest(res,'cannot access surveys created by other users');
-            return;
-          }
+     const survey=await surveyModel.findOne({_id:id},{questions:1,title:1,description:1});
+     
      return apiresponse.successResponseWithData(res,survey,"operation successful");
    } catch (error) {
     console.log(error)
-    return apiresponse.errorResponseServer(res,'internal server error');
+    return apiresponse.errorResponseServer(res,'Something Went Wrong');
 
    }
 };
@@ -118,7 +126,7 @@ const getSurveyResponses=async(req,res)=>{
 
    } catch (error) {
       console.log(error)
-      return apiresponse.errorResponseServer(res,'internal server error');   
+      return apiresponse.errorResponseServer(res,'Something Went Wrong');   
    }
 };
 const getSurveyResponse=async(req,res)=>{
@@ -131,12 +139,12 @@ const getSurveyResponse=async(req,res)=>{
        if (!mongoose.Types.ObjectId.isValid(id)) {
          apiresponse.errorResponseBadRequest(res, 'Invalid survey ID');
          return;}
-      const surveyResponse=await responseModel.findById(id,{name:1,answers:1})
+      const surveyResponse=await responseModel.findById({_id:id},{name:1,answers:1,email:1})
       return apiresponse.successResponseWithData(res,surveyResponse,"operation successful");
 
    } catch (error) {
       console.log(error)
-      return apiresponse.errorResponseServer(res,'internal server error');   
+      return apiresponse.errorResponseServer(res,'Something Went Wrong');   
    }
 };
 const updateSurvey=async(req,res)=>{
@@ -152,13 +160,15 @@ const updateSurvey=async(req,res)=>{
       return apiresponse.successResponseWithData(res,newSurvey,'operation successful')
 
    } catch (error) {
-      return apiresponse.errorResponseServer(res,'internal server error');   
+      return apiresponse.errorResponseServer(res,'Something Went Wrong');   
    }
 };
 const deleteSurvey=async(req,res)=>{
   try {
    const id=req.params.id;
    if(!id){
+
+      
       apiresponse.errorResponseServer(res,'Please enter response id in request parameters');
       return;
    };
@@ -166,7 +176,7 @@ const deleteSurvey=async(req,res)=>{
    return apiresponse.successResponseWithoutData(res, `survey with id: ${id} deleted successfully`);
   } catch (error) {
    console.log(error)
-   return apiresponse.errorResponseServer(res,'internal server error'); 
+   return apiresponse.errorResponseServer(res,'Something Went Wrong'); 
   }
   
 };

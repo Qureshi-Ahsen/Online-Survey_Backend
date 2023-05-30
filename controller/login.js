@@ -5,7 +5,8 @@ const apiresponse=require('../helper/response');
 const nodemailer=require('nodemailer')
 const otpGenerator=require('otp-generator')
 const otpModel=require('../models/otp')
-
+const Handlebars=require('handlebars')
+const moment=require('moment')
 
 const login=async (req,res)=>{
     try {
@@ -37,7 +38,7 @@ const login=async (req,res)=>{
          return;
         }  
     } catch (error) {
-        res.status(500).send('internal server error');
+        return res.status(500).send('internal server error');
     }
 };
 
@@ -64,7 +65,7 @@ const resetPassword = async (req, res) => {
     }
   } catch (error) {
     console.log(error);
-    res.status(500).send("internal server error");
+    return res.status(500).send("internal server error");
   }
 };
 
@@ -85,6 +86,11 @@ const forgotPassword=async(req,res)=>{
       const otp= await otpGenerator.generate(6,{lowerCaseAlphabets:true,digits:true,specialChars:true})
       const saveOtp=new otpModel({otp:otp,userId:userData._id})
       await saveOtp.save();
+      const savedDate=moment.utc(userData.createdAt)
+      const localDate=savedDate.local();
+      formatedlocalDate=localDate.format('YY-DD-MM HH:mm:ss')
+      expirationTime=localDate.add(5,'minutes')
+      expirationformattedTime=expirationTime.format('YY-DD-MM HH:mm:ss')
     const transporter = nodemailer.createTransport({
       host: "sandbox.smtp.mailtrap.io",
       port: 2525,
@@ -93,12 +99,34 @@ const forgotPassword=async(req,res)=>{
         pass: "54ec0531e87ebe"
       }
     });
-    const mailOptions = {
-      from: '28952fea80fd81',
-      to: email,
-      subject: 'Password Reset Request',
-      text: `Your password reset otp is: ${ otp} please enter this otp`,
-    };
+ 
+
+    const templateSource = `
+    <div style=' background-color:white'>
+    <h1 style='color: black ;size:3rem ;font-weight:900 ; font-family: Helvetica,Arial,sans-serif;margin:20px 30px 10px 50px; 
+    '>Hi <span style="color: #00466a ;font-size:2rem;font-weight:900 ; font-family: Helvetica,Arial,sans-serif;">{{name}}</span></h1>
+    <p style='color:grey ;font-weight:400; margin:20px 30px 10px 50px  ; '>Thank you for choosing Your Brand.You requested otp for changing password at {{time}}, Use the following OTP to complete your Sign Up procedures. OTP is valid for 5 mintes and will expire at {{expire}} </p><br/><br/>
+    <p style='margin:0 auto; color:white; font-size:2.5rem; background:#00466a;width:max-content; border-radius:6px;padding: 7px;'>{{otp}}</p>
+  </div>
+  `;
+  
+const template = Handlebars.compile(templateSource);
+const data = {
+  name:userData.name,
+  otp: otp,
+  time:formatedlocalDate,
+  expire:expirationformattedTime
+  
+};
+const html = template(data);
+
+const mailOptions = {
+  from: 'sender@example.com',
+  to: 'recipient@example.com',
+  subject: 'Password Reset Request',
+  html: html,
+};
+
   
     transporter.sendMail(mailOptions, (error, info) => {
       if (error) {
@@ -106,13 +134,13 @@ const forgotPassword=async(req,res)=>{
         res.status(500).json({ error: 'Failed to send email' });
       } else {
         console.log('Email sent: ' + info.response);
-        apiresponse.successResponseWithoutData(res,"password reset email has been sent");
+        return apiresponse.successResponseWithoutData(res,"password reset email has been sent");
       }
     });
   
   } catch (error) {
     console.log(error)
-    apiresponse.errorResponseServer(res,"internal server error")
+    return apiresponse.errorResponseServer(res,"internal server error")
   }
 };
 
@@ -139,7 +167,7 @@ const changePassword = async (req, res) => {
     res.json({ message: "Password updated successfully" });
   } catch (error) {
     console.log(error);
-    apiresponse.errorResponseServer(res, "Internal server error");
+    return apiresponse.errorResponseServer(res, "Internal server error");
   }
 };
 
@@ -158,7 +186,7 @@ const refrehtoken=async (req,res)=>{
 
     const User=await user.findOne({_id:decoded._id},{refreshToken:1});
     if(User.refreshToken !== refreshToken ){
-      res.status(404).send("invalid token")
+      return res.status(404).send("invalid token")
     };
    
     const generateAccessToken = (User) =>{
@@ -169,7 +197,8 @@ const refrehtoken=async (req,res)=>{
 
   } catch (error) {
     console.log(error)
-    apiresponse.errorResponseServer(res, "Internal server error");
+    return apiresponse.errorResponseServer(res, "Internal server error");
   }
 }
+
 module.exports={login,resetPassword,forgotPassword,changePassword,refrehtoken}
