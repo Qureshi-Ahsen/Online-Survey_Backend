@@ -114,14 +114,15 @@ const getSurveyByIdQuestions=async(req,res)=>{
 const getSurveyResponses=async(req,res)=>{
    try {
       const id=req.params.id;
+      console.log(id)
         if(!id){
            apiresponse.errorResponseBadRequest(res,'Please enter Survey id in request parameters');
            return;
        }
-       const responseCount = await responseModel.countDocuments({ surveyId: id });
-       const surveyResponse = await responseModel.find({ surveyId: id }, { name: 1, email: 1, createdAt: 1 });
-       
-      
+       const surveyResponse = await responseModel.find({surveyId:id}, { name: 1, email: 1, createdAt: 1 });
+       console.log(surveyResponse)
+       const surveyId=await responseModel.findOne({surveyId:id})
+      console.log(surveyId)
       return apiresponse.successResponseWithData(res,surveyResponse,"operation successful");
 
    } catch (error) {

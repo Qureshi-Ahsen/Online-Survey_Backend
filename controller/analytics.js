@@ -60,5 +60,50 @@ const analyticsData = async (req, res) => {
     return apiresponse.errorResponseServer(res, "An error occurred");
   }
 };
+const responseGraph=async(req,res)=>{
+  try {
+    const user=req.user;
+    if(!user._id){
+    return  apiresponse.errorResponseBadRequest(res,"Auth Token does Not contain User Id")
+    }
+    const userData=await surveyModel.find({createdBy:user._id},{_id:1});
+    if(!userData || userData.length===0){
+    return  apiresponse.errorResponseBadRequest("User Not Found")
+    }
+    const surveyIds = userData.map(user => user._id);
+ 
+const responseCounts = await surveyModel.aggregate([
+  {
+    $match: {
+      _id: { $in: surveyIds }
+    }
+  },
+  {
+    $lookup: {
+      from: "responses",
+      localField: "_id",
+      foreignField: "surveyId",
+      as: "responses"
+    }
+  },
+  {
+    $addFields: {
+      responseCount: { $size: "$responses" }
+    }
+  },
+  {
+    $project: {
+      _id: 1,
+      title: 1,
+      responseCount: 1
+    }
+  }
+]).exec();
+    return apiresponse.successResponseWithData(res,responseCounts,"Retrieved Survey Titles With Response Count For Each Survey")
+  } catch (error) {
+    console.log(error)
+    return apiresponse.errorResponseServer(res,"An Error Occured")
+  }
+}
 
-module.exports = { analyticsData };
+module.exports = { analyticsData,responseGraph };
