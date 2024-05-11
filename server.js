@@ -18,7 +18,7 @@ app.use('*',(req,res)=>{
     res.send('this end point is not available')
 });
 const sessionStore = new MongoStore({
-  mongoUrl: 'mongodb+srv://ahsenqureshi5555:ahsensys123@cluster0.kbxrecn.mongodb.net/sessionstore'
+  mongoUrl: //mongo session token comes here
 });
 app.use(session({
   secret: 'your-secret',
