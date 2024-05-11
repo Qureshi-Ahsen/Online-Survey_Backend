@@ -95,8 +95,8 @@ const forgotPassword=async(req,res)=>{
       host: "sandbox.smtp.mailtrap.io",
       port: 2525,
       auth: {
-        user: "28952fea80fd81",
-        pass: "54ec0531e87ebe"
+        user://user of mail trap tp be inserted,
+        pass: // pass of mailtrap
       }
     });
  
